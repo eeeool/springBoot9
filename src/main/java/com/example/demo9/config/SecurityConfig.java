@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     // 각 페이지에 대한 접근 권한설정
     http.authorizeHttpRequests(request -> request
-            .requestMatchers("/images/**").permitAll()
+            .requestMatchers("/images/**", "message/**").permitAll()
             .requestMatchers("/", "/css/**", "/js/**", "/guest/**").permitAll()
             .requestMatchers("/member/memberJoin").permitAll()
             .requestMatchers("/member/memberLoginOk","/member/memberLogout","/member/memberMain").authenticated()

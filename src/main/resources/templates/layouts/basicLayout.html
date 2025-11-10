@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-                xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
   <meta charset="UTF-8">
-  <th:block th:insert="~{include/bs5}"></th:block>
   <title>basicLayout.html</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
 
+  <!-- js파일, css파일을 처리하는 영역 -->
   <th:block layout:fragment="script"></th:block>
   <th:block layout:fragment="css"></th:block>
+
 </head>
 <body>
 <div th:replace="~{layouts/header::header}"></div>
 <p><br/></p>
-<div class="container">
-    <div layout:fragment="content"></div>
-</div>
+<div class="container text-center">
+  <div layout:fragment="content">
 
+  </div>
+</div>
 <p><br/></p>
 <div th:replace="~{layouts/footer::footer}"></div>
 </body>
