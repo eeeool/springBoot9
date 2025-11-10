@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    // 방명록 삭제처리
+    function guestDelete(id) {
+      let ans = confirm("삭제할까요?");
+      if(ans) location.href = "/guest/guestDelete?id="+id;
+    }
+  </script>
+</th:block>
+
+<th:blcok layout:fragment="css">
+  <style>
+    th {
+      background-color: #eee !important;
+      width: 150px !important;
+      text-align: center !important;
+    }
+  </style>
+</th:blcok>
+
+<div layout:fragment="content">
+  <h2 class="text-center">방명록 리스트</h2>
+  <table class="table table-borderless m-0 p-0">
+    <tr>
+      <td class="text-start">
+        <a href="guestInput" class="btn btn-success btn-sm">글쓰기</a>
+      </td>
+      <td class="text-end">
+        <th:block th:if="${pag-1 > 1}">
+          <a th:href="@{guestList(pag=0,pageSize=${pageSize})}" title="첫페이지" class="text-decoration-none text-dark link-primary">◁</a>
+          <a th:href="@{guestList(pag=${pag-2},pageSize=${pageSize})}" title="이전페이지" class="text-decoration-none text-dark link-primary">◀</a>
+        </th:block>
+        [[${pag}]]/[[${totPage}]]
+        <th:block th:if="${pag-1 < totPage}">
+          <a th:href="@{guestList(pag=${pag},pageSize=${pageSize})}" title="다음페이지" class="text-decoration-none text-dark link-primary">▶</a>
+          <a th:href="@{guestList(pag=${totPage-1},pageSize=${pageSize})}" title="마지막페이지" class="text-decoration-none text-dark link-primary">▷</a>
+        </th:block>
+      </td>
+    </tr>
+  </table>
+
+  <div th:each="dto : ${dtos}">
+    <table class="table table-borderless m-0 p-0">
+      <tr>
+        <td class="text-start">번호 : [[${curScrStartNo}]]
+          <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+            <a th:href="|javascript:guestDelete(${dto.id})|" class="badge bg-danger text-light link-primary link-underline-opacity-0 link-underline-opacity-100-hover">삭제</a>
+          </th:block>
+        </td>
+        <td class="text-end">방문IP : [[${dto.hostIp}]]</td>
+      </tr>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>성명</th>
+        <td>[[${dto.name}]]</td>
+        <th>방문일자</th>
+        <td>[[${dto.visitDate}]]</td>
+      </tr>
+      <tr>
+        <th>이메일</th>
+        <td colspan="3">
+          [[${dto.email}]]
+        </td>
+      </tr>
+      <tr>
+        <th>홈페이지</th>
+        <td colspan="3">
+          [[${dto.homePage}]]
+        </td>
+      </tr>
+      <tr>
+        <th>방문소감</th>
+        <td colspan="3" style="height:150px; text-align:left;" th:utext="${#strings.replace(dto.content, newLine, '&lt;br/&gt;')}"></td>
+      </tr>
+    </table>
+    <br/>
+  </div>
+
+  <!-- 블록페이지 시작 -->
+  <div class="text-center">
+    <th:block th:if="${pag > 1}">[<a th:href="@{guestList(pag=1-1,pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">첫페이지</a>]</th:block>
+    <th:block th:if="${curBlock > 0}">[<a th:href="@{guestList(pag=${(curBlock-1)*blockSize}-1,pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">이전블록</a>]</th:block>
+    <th:block th:each="i: ${#numbers.sequence((curBlock*blockSize)+1,(curBlock*blockSize)+blockSize)}" >
+      <th:block th:if="${i <= totPage && i == pag}">[<a th:href="@{guestList(pag=${i-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary"><font color="red"><b>[[${i}]]</b></font></a>]</th:block>
+      <th:block th:if="${i <= totPage && i != pag}">[<a th:href="@{guestList(pag=${i-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">[[${i}]]</a>]</th:block>
+    </th:block>
+    <th:block th:if="${curBlock < lastBlock}">[<a th:href="@{guestList(pag=${(curBlock+1)*blockSize+1-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">다음블록</a>]</th:block>
+    <th:block th:if="${pag < totPage}">[<a th:href="@{guestList(pag=${totPage-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">마지막페이지</a>]</th:block>
+  </div>
+  <!-- 블록페이지 끝 -->
+
+</div>
+
+</html>
