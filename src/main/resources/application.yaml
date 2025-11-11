@@ -22,6 +22,13 @@ spring:
     username: root
     password: 1234
 
+  # File Upload MaxSize Setting
+  servlet:
+    multipart:
+      enabled: true
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
+
   # JAP Setting
   jpa:
     open-in-view: true

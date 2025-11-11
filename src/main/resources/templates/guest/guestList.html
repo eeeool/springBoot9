@@ -45,10 +45,10 @@
     </tr>
   </table>
 
-  <div th:each="dto : ${dtos}">
+  <div th:each="dto, st : ${dtos}">
     <table class="table table-borderless m-0 p-0">
       <tr>
-        <td class="text-start">번호 : [[${curScrStartNo}]]
+        <td class="text-start">번호 : [[${curScrStartNo - st.index}]]
           <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
             <a th:href="|javascript:guestDelete(${dto.id})|" class="badge bg-danger text-light link-primary link-underline-opacity-0 link-underline-opacity-100-hover">삭제</a>
           </th:block>
@@ -61,18 +61,22 @@
         <th>성명</th>
         <td>[[${dto.name}]]</td>
         <th>방문일자</th>
-        <td>[[${dto.visitDate}]]</td>
+<!--        <td th:text="${#strings.substring(dto.visitDate, 0, 19)}">-->
+        <td th:text="${#strings.substring(#strings.replace(dto.visitDate, 'T', ' '), 0, 19)}">
+<!--          [[${dto.visitDate}]]-->
+
+        </td>
       </tr>
       <tr>
         <th>이메일</th>
-        <td colspan="3">
-          [[${dto.email}]]
+        <td th:text="${#strings.isEmpty(dto.email) ? '없음' : dto.email}" colspan="3">
+<!--          [[${dto.email}]]-->
         </td>
       </tr>
       <tr>
         <th>홈페이지</th>
-        <td colspan="3">
-          [[${dto.homePage}]]
+        <td th:text="${#strings.isEmpty(dto.email) ? '없음' : dto.email}" colspan="3">
+<!--          [[${dto.homePage}]]-->
         </td>
       </tr>
       <tr>
@@ -84,7 +88,7 @@
   </div>
 
   <!-- 블록페이지 시작 -->
-  <div class="text-center">
+  <!--<div class="text-center">
     <th:block th:if="${pag > 1}">[<a th:href="@{guestList(pag=1-1,pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">첫페이지</a>]</th:block>
     <th:block th:if="${curBlock > 0}">[<a th:href="@{guestList(pag=${(curBlock-1)*blockSize}-1,pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">이전블록</a>]</th:block>
     <th:block th:each="i: ${#numbers.sequence((curBlock*blockSize)+1,(curBlock*blockSize)+blockSize)}" >
@@ -93,6 +97,20 @@
     </th:block>
     <th:block th:if="${curBlock < lastBlock}">[<a th:href="@{guestList(pag=${(curBlock+1)*blockSize+1-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">다음블록</a>]</th:block>
     <th:block th:if="${pag < totPage}">[<a th:href="@{guestList(pag=${totPage-1},pageSize=${pageSize})}" class="text-decoration-none text-dark link-primary">마지막페이지</a>]</th:block>
+  </div>-->
+
+  <div class="text-center">
+    <ul class="pagination justify-content-center">
+      <th:block th:if="${pag > 1}"><li class="page-item"><a class="page-link text-secondary" th:href="@{guestList(pageSize=${pageSize},pag=0)}">첫페이지</a></li></th:block>
+      <th:block th:if="${curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" th:href="@{guestList(pageSize=${pageSize},pag=${(curBlock-1)*blockSize+1-1})}">이전블록</a></li></th:block>
+      <th:block th:each="i: ${#numbers.sequence((curBlock*blockSize)+1,(curBlock*blockSize)+blockSize)}">
+        <th:block th:if="${i <= totPage && i == pag}"><li class="page-item active"><a class="page-link bg-secondary border-secondary" th:href="@{guestList(pageSize=${pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+        <th:block th:if="${i <= totPage && i != pag}"><li class="page-item"><a class="page-link text-secondary" th:href="@{guestList(pageSize=${pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+      </th:block>
+      <th:block th:if="${curBlock < lastBlock}"><li class="page-item"><a class="page-link text-secondary" th:href="@{guestList(pageSize=${pageSize},pag=${(curBlock+1)*blockSize+1-1})}">다음블록</a></li></th:block>
+      <th:block th:if="${pag < totPage}"><li class="page-item"><a class="page-link text-secondary" th:href="@{guestList(pageSize=${pageSize},pag=${totPage-1})}">마지막페이지</a></li></th:block>
+      </ul>
+    </div>
   </div>
   <!-- 블록페이지 끝 -->
 

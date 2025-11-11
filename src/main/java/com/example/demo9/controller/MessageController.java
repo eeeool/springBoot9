@@ -30,6 +30,14 @@ public class MessageController {
       model.addAttribute("message", "방명록에 게시글이 삭제되었습니다.");
       model.addAttribute("url", "/guest/guestList");
     }
+    else if(msgFlag.equals("boardInputOk")) {
+      model.addAttribute("message", "게시판에 글이 등록되었습니다.");
+      model.addAttribute("url", "/board/boardList");
+    }
+    else if(msgFlag.equals("boardInputNo")) {
+      model.addAttribute("message", "게시판 글 등록 실패");
+      model.addAttribute("url", "/board/boardInput");
+    }
     return "include/message";
   }
 }

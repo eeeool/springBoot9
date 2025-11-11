@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -20,8 +22,16 @@ public class SecurityConfig {
 //            .formLogin(Customizer.withDefaults())
 //            .logout(Customizer.withDefaults());
 
+    CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+    requestHandler.setCsrfRequestAttributeName("_csrf");
+
     // 사용자가 만든 로그인폼에 대해서만 허용처리
-    http.formLogin(form -> form
+    http.
+            csrf(csrf -> csrf
+              .csrfTokenRequestHandler(requestHandler)
+              .ignoringRequestMatchers("/ckeditor/imageUpload")
+              .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+              .formLogin(form -> form
             .loginPage("/member/memberLogin")
             .defaultSuccessUrl("/member/memberLoginOk", true)
             .failureUrl("/member/login/error")
@@ -30,7 +40,7 @@ public class SecurityConfig {
 
     // 각 페이지에 대한 접근 권한설정
     http.authorizeHttpRequests(request -> request
-            .requestMatchers("/images/**", "message/**").permitAll()
+            .requestMatchers("/images/**", "message/**", "/ckeditor/**", "/ckeditorUpload/**").permitAll()
             .requestMatchers("/", "/css/**", "/js/**", "/guest/**").permitAll()
             .requestMatchers("/member/memberJoin").permitAll()
             .requestMatchers("/member/memberLoginOk","/member/memberLogout","/member/memberMain").authenticated()
@@ -45,6 +55,9 @@ public class SecurityConfig {
 
     // 기본 로그아웃 처리
     http.logout(Customizer.withDefaults());
+
+    http.headers(headers -> headers
+            .frameOptions(frame -> frame.sameOrigin()));
 
     return http.build();
   }
