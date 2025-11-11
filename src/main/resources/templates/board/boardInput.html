@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<!-- CSRF 설정 -->
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+<th:block layout:fragment="script">
+  <script src="/ckeditor/ckeditor.js"></script>
+  <script th:inline="javascript">
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+    $(function() {
+      $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+      });
+    });
+  </script>
+</th:block>
+
+<div layout:fragment="content" class="container text-center" style="height:830px">
+  <h2>글쓰기</h2>
+  <form method="post" enctype="multipart/form-data">
+    <table class="table table-bordered">
+      <tr>
+        <th>글쓴이</th>
+        <td><input type="text" name="name" id="name" th:value="${session.sName}" readonly class="form-control"/></td>
+      </tr>
+      <tr>
+        <th>글제목</th>
+        <td><input type="text" name="title" class="form-control" /></td>
+      </tr>
+      <tr>
+        <th>글내용</th>
+        <td>
+          <textarea name="content" id="ckeditor" rows="6" class="form-control"></textarea>
+          <script>
+            CKEDITOR.replace("ckeditor", {
+              height: 460,
+              filebrowserUploadMethod: "form",
+              filebrowserUploadUrl: "/ckeditor/imageUpload",
+              uploadUrl : "/ckeditor/imageUpload"
+            });
+          </script>
+        </td>
+      </tr>
+      <tr>
+        <th>공개여부</th>
+        <td>
+          <input type="radio" name="openSw" id="openSw1" value="OK" checked /> 공개 &nbsp;
+          <input type="radio" name="openSw" id="openSw2" value="NO" /> 비공개
+        </td>
+      </tr>
+    </table>
+    <input type="submit" value="글올리기" class="btn btn-success me-2"/>
+    <input type="reset" value="다시입력" class="btn btn-warning me-2"/>
+    <input type="button" value="돌아가기" onclick="location.href='boardList';" class="btn btn-info"/>
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+  </form>
+</div>
+
+</html>
