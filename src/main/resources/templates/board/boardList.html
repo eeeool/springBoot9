@@ -1,62 +1,92 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/basicLayout}">
 
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    function pageSizeCheck() {
+      let pageSize = document.getElementById("pageSize").value;
+      location.href = "boardList?pageSize="+pageSize;
+    }
+  </script>
+</th:block>
+
 <div layout:fragment="content" class="text-center">
-    <h2>게 시 판 리 스 트</h2>
-    <div class="row mt-2 mb-1">
-      <div class="col text-start">
-        <a th:href="@{boardInput}" class="btn btn-success btn-sm">글쓰기</a>
-      </div>
-      <div class="col text-end">
-        <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
-          <option>5</option>
-          <option>10</option>
-          <option>15</option>
-          <option>20</option>
-          <option>25</option>
-          <option>30</option>
-        </select>
-      </div>
+  <h2>게 시 판 리 스 트</h2>
+  <div class="row mt-3 mb-1">
+    <div class="col text-start">
+      <a th:href="@{boardInput}" class="btn btn-success btn-sm">글쓰기</a>
     </div>
-    <table class="table table-hover text-center">
-      <tr class="table-secondary">
-        <th>번호</th>
-        <th>제목</th>
-        <th>글쓴이</th>
-        <th>글쓴날짜</th>
-        <th>조회수(좋아요)</th>
+    <div class="col text-end">
+      <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
+        <option th:selected="${pageVO.pageSize==5 }">5</option>
+        <option th:selected="${pageVO.pageSize==10}">10</option>
+        <option th:selected="${pageVO.pageSize==15}">15</option>
+        <option th:selected="${pageVO.pageSize==20}">20</option>
+        <option th:selected="${pageVO.pageSize==30}">30</option>
+        <option th:selected="${pageVO.pageSize==50}">50</option>
+      </select>
+    </div>
+  </div>
+  <table class="table table-hover text-center">
+    <tr class="table-secondary">
+      <th>번호</th>
+      <th>글제목</th>
+      <th>글쓴이</th>
+      <th>글쓴날짜</th>
+      <th>조회수(좋아요)</th>
+    </tr>
+    <th:block th:each="board, st : ${pageVO.boardList}">
+      <tr>
+        <td>[[${pageVO.curScrStartNo - st.index}]]</td>
+        <td class="text-start">
+          <a th:href="@{boardContent(id=${board.id}, pag=${pageVO.pag}, pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
+          <th:block th:if="${board.hourDiff <= 24}"><img src="/images/new.gif" /></th:block>
+        </td>
+        <td>[[${board.name}]]</td>
+        <td>
+          <th:block th:if="${board.hourDiff <= 24}">
+            <!--<span th:text="${vo.dateDiff == 0} ? ${#strings.substring(vo.wDate.toString(), 11, 19)} : ${#strings.substring(vo.wDate.toString(), 0, 19)}"></span>-->
+            <span th:text="${board.dateDiff == 0} ? ${#temporals.format(board.wDate, 'HH:mm:ss')} : ${#temporals.format(board.wDate, 'yyyy-MM-dd HH:mm')}"></span>
+          </th:block>
+          <th:block th:if="${board.hourDiff > 24}"><span th:text="${#strings.substring(board.wDate,0,10)}"></span></th:block>
+        </td>
+        <td>[[${board.readNum}]]([[${board.good}]])</td>
       </tr>
-      <th:block th:each="board, st : ${boardList}">
-        <tr>
-          <td>[[${st.count}]]</td>
-          <td>
-            [[${board.title}]]
-          </td>
-          <td>[[${board.name}]]</td>
-          <td>
-            <span th:text="${board.wDate}"></span>
-          </td>
-          <td>[[${board.readNum}]]([[${board.good}]])</td>
-        </tr>
-      </th:block>
-    </table>
+    </th:block>
+  </table>
 
   <!-- 블록페이지 시작 -->
-  <!--<div class="text-center">
+  <div class="text-center">
     <ul class="pagination justify-content-center">
-      <th:block th:if="${pag > 1}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageSize},pag=0)}">첫페이지</a></li></th:block>
-      <th:block th:if="${curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageSize},pag=${(curBlock-1)*blockSize+1-1})}">이전블록</a></li></th:block>
-      <th:block th:each="i: ${#numbers.sequence((curBlock*blockSize)+1,(curBlock*blockSize)+blockSize)}">
-        <th:block th:if="${i <= totPage && i == pag}"><li class="page-item active"><a class="page-link bg-secondary border-secondary" th:href="@{boardList(pageSize=${pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
-        <th:block th:if="${i <= totPage && i != pag}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+      <th:block th:if="${pageVO.pag > 1}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=0)}">첫페이지</a></li></th:block>
+      <th:block th:if="${pageVO.curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock-1)*pageVO.blockSize+1-1})}">이전블록</a></li></th:block>
+      <th:block th:each="i: ${#numbers.sequence((pageVO.curBlock*pageVO.blockSize)+1,(pageVO.curBlock*pageVO.blockSize)+pageVO.blockSize)}">
+        <th:block th:if="${i <= pageVO.totPage && i == pageVO.pag}"><li class="page-item active"><a class="page-link bg-secondary border-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+        <th:block th:if="${i <= pageVO.totPage && i != pageVO.pag}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
       </th:block>
-      <th:block th:if="${curBlock < lastBlock}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageSize},pag=${(curBlock+1)*blockSize+1-1})}">다음블록</a></li></th:block>
-      <th:block th:if="${pag < totPage}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageSize},pag=${totPage-1})}">마지막페이지</a></li></th:block>
+      <th:block th:if="${pageVO.curBlock < pageVO.lastBlock}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock+1)*pageVO.blockSize+1-1})}">다음블록</a></li></th:block>
+      <th:block th:if="${pageVO.pag < pageVO.totPage}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${pageVO.totPage-1})}">마지막페이지</a></li></th:block>
     </ul>
-  </div>-->
+  </div>
+  <!-- 블록페이지 끝 -->
+
+  <!-- 검색기 시작 -->
+  <div class="text-center">
+    <form name="searchForm" method="get">
+      <b>검색  : </b>
+      <select name="search" id="search">
+        <option value="title"   th:selected="${pageVO.searchStr=='글제목'}">글제목</option>
+        <option value="name"    th:selected="${pageVO.searchStr=='글쓴이'}">글쓴이</option>
+        <option value="content" th:selected="${pageVO.searchStr=='글내용'}">글내용</option>
+      </select>
+      <input type="text" name="searchString" id="searchString" th:value="${pageVO.searchString}" required />
+      <input type="submit" value="검색" class="btn btn-secondary btn-sm"/>
+    </form>
+  </div>
+  <!-- 검색기 끝 -->
+
 </div>
-<!-- 블록페이지 끝 -->
+
 </html>

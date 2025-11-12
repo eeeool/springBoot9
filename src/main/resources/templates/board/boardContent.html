@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    // 댓글 달기
+    function replyCheck() {
+      let ans = confirm('댓글을 작성할까요?');
+      if (!ans) return;
+
+      let boardId = $('form[name="replyForm"] input[name="boardId"]').val();
+      let content = $('#content').val();
+
+      if (!content.trim()) {
+        alert('내용을 입력하세요.');
+        return;
+      }
+
+      $.ajax({
+        type: 'POST',
+        url: '/board/boardReplyInput',
+        data: {
+          boardId: boardId,
+          content: content,
+          _csrf: $("input[name='_csrf']").val()
+        },
+        success: (res) => {
+          if (res != 0) {
+            alert('댓글이 등록되었습니다.');
+            $('#content').val('');
+            location.reload();
+          }
+        },
+        error: function(err) {
+          alert('댓글등록 실패');
+        }
+      });
+    }
+
+    // 게시글 삭제
+    function delCheck(id) {
+      let ans = confirm('삭제할까요?');
+      if (ans) location.href = '/board/boardDelete?id='+id;
+    }
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <h2 class="text-center mb-4">글 내용 보기</h2>
+  <th:block th:if="${board.complaint == 'HI'}">
+    <hr class="border border-dark">
+    <h3 class="text-center text-danger">해당 게시글은 신고된 글입니다.</h3>
+    <hr class="border border-dark">
+    <div class="text-center"><input type="button" value="돌아가기"
+                                    th:onclick="'location.href=\'/board/boardList?pag=' + ${pageVO.pag-1} + '&pageSize=' + ${pageVO.pageSize} + '&search=' + ${pageVO.search} + '&searchString=' + ${pageVO.searchString} + '\''"
+                                    class="btn btn-info"/></div>
+  </th:block>
+  <th:block th:if="${board.complaint != 'HI'}">
+    <table class="table table-bordered text-center border-secondary-subtle">
+      <tr>
+        <th class="table-secondary">글쓴이</th>
+        <td>[[${board.name}]]</td>
+        <th class="table-secondary">글쓴날짜</th>
+        <td>[[${#strings.substring(board.wDate,0,19)}]]</td>
+      </tr>
+      <tr>
+        <th class="table-secondary">글조회수</th>
+        <td>[[${board.readNum}]]</td>
+        <th class="table-secondary">접속IP</th>
+        <td>[[${board.hostIp}]]</td>
+      </tr>
+      <tr>
+        <th class="table-secondary">글제목</th>
+        <td colspan="3" class="text-start">[[${board.title}]]
+          (<a th:href="|javascript:goodCheck1()|" title="좋아요">❤</a>([[${board.good}]]))
+          (<a th:href="|javascript:goodCheck2(1)|" title="좋아요">👍</a>
+          <a th:href="|javascript:goodCheck2(-1)|" title="싫어요">👎</a>([[${board.good}]]))
+        </td>
+      </tr>
+      <tr>
+        <th class="table-secondary">글내용</th>
+        <td colspan="3" style="height:250px" class="text-start" th:utext="${#strings.replace(board.content, newLine, '<br/>')}"></td>
+      </tr>
+    </table>
+    <div class="row">
+      <div class="col text-start"><input type="button" value="돌아가기" th:onclick="|location.href='@{boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|" class="btn btn-info"/></div>
+      <div class="col">
+        <th:block th:if="${session.sName != board.name && board.complaint == 'NO'}"><a href="#" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-danger">신고하기</a></th:block>
+        <th:block th:if="${board.complaint == 'OK'}"><font color="red"><b>현재 게시글은 신고된 글입니다.</b></font></th:block>
+      </div>
+      <th:block th:if="${session.sName == board.name || session.strLevel == '관리자'}">
+        <div class="col text-end">
+          <th:block th:if="${session.sName == board.name}">
+            <input type="button" value="수정" th:onclick="|location.href='boardUpdate(id=${board.id},pag=${pag},pageSize=${pageSize},search=${search},searchString=${searchString}'|" class="btn btn-warning"/>
+          </th:block>
+          <input type="button" value="삭제" onclick="delCheck([[${board.id}]])" class="btn btn-danger"/>
+        </div>
+      </th:block>
+    </div>
+  </th:block>
+
+  <hr/>
+  <!-- 이전글/다음글 -->
+  <div class="row">
+    <div class="col text-start">
+      <th:block th:if="${!#strings.isEmpty(nextVO)}">
+        👆 <a th:href="@{boardContent(id=${nextVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">다음글 : [[${nextVO.title}]]</a><br/>
+      </th:block>
+      <th:block th:if="${!#strings.isEmpty(preVO)}">
+        👇 <a th:href="@{boardContent(id=${preVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">이전글 : [[${preVO.title}]]</a><br/>
+      </th:block>
+    </div>
+  </div>
+  <hr/>
+
+  <!-- 댓글처리(리스트/입력) -->
+  <!-- 댓글 리스트 -->
+  <table class="table table-hover text-center">
+    <tr class="table-secondary">
+      <th>작성자</th>
+      <th>댓글내용</th>
+      <th>댓글일자</th>
+      <th>접속IP</th>
+    </tr>
+    <th:block th:each="replyVO, st : ${replyVos}">
+      <tr>
+        <td><span th:text="${replyVO.name}"></span>
+          <th:block th:if="${sMid == replyVO.name || sLevel == 0}">
+            (<a th:href="|javascript:replyDeleteCheck(${replyVO.id})|" title="댓글삭제">x</a>)
+            <th:block th:if="${sMid == replyVO.name}">
+              (<a th:href="|javascript:replyUpdateCheck(${replyVO.id})|" title="댓글수정">√</a>)
+            </th:block>
+          </th:block>
+        </td>
+        <td class="text-start" th:text="${#strings.replace(replyVO.content, newLine, '<br/>')}"></td>
+        <td th:text="${#strings.substring(replyVO.wDate, 0, 10)}"></td>
+        <td th:text="${replyVO.hostIp}"></td>
+      </tr>
+      <!-- 아래로 댓글 수정 폼 보기 -->
+      <tr style="display:none">
+        <td colspan="4">
+          <div id="replyUpdateForm${replyVO.id}" class="replyUpdateForm">
+            <form name="replyUpdateForm">
+              <table class="table text-center">
+                <tr>
+                  <td class="text-start" style="width:85%">
+                    글내용 :
+                    <textarea rows="4" name="content" id="content${replyVO.id}" class="form-control">${replyVO.content}</textarea>
+                  </td>
+                  <td style="width:15%"><br/>
+                    <p>작성자 : ${sNickName}</p>
+                    <p>
+                      <a th:href="|javascript:replyUpdateCheckOk(${replyVO.id})|" class="badge bg-primary">댓글수정</a>
+                      <a th:href="|javascript:replyUpdateViewClose(${replyVO.id})|" class="badge bg-warning">창닫기</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </form>
+          </div>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <hr/>
+
+  <!-- 댓글 입력창 -->
+  <form name="replyForm">
+    <table class="table text-center">
+      <tr>
+        <td class="text-start" style="width:85%">
+          글내용 :
+          <textarea rows="4" name="content" id="content" class="form-control"></textarea>
+        </td>
+        <td style="width:15%"><br/>
+          <p>작성자 : [[${sName}]]</p>
+          <p><input type="button" value="댓글달기" onclick="replyCheck()" class="btn btn-info btn-sm"/></p>
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+    <input type="hidden" name="_csrf_header" th:content="${_csrf.headerName}">
+  </form>
+
+</div>
+
+
+</html>

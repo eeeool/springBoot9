@@ -13,9 +13,9 @@
   <script>
     'use strict';
     
-    function guestDelete(idx) {
+    function guestDelete(id) {
     	let ans = confirm("현재 게시글을 삭제하시겠습니까?");
-    	if(ans) location.href = "guestDelete?idx="+idx;
+    	if(ans) location.href = "guestDelete?id="+id;
     }
   </script>
   <style>
@@ -55,12 +55,12 @@
   <c:forEach var="vo" items="${vos}" varStatus="st">
     <table class="table table-borderless m-0 p-0">
 	    <tr>
-	      <%-- <td>번호 : ${vo.idx} --%>
+	      <%-- <td>번호 : ${vo.id} --%>
 	      <td>번호 : ${curScrStartNo}
-	        <c:if test="${sAdmin == 'adminOK'}"><a href="javascript:guestDelete(${vo.idx})" class="btn btn-danger btn-sm">삭제</a></c:if>
+	        <c:if test="${sAdmin == 'adminOK'}"><a href="javascript:guestDelete(${vo.id})" class="btn btn-danger btn-sm">삭제</a></c:if>
 	        <c:if test="${sAdmin != 'adminOk' && sNickName == vo.name}">
 	          <a href="#" class="btn btn-warning btn-sm">수정</a>
-	          <a href="javascript:guestDelete(${vo.idx})" class="btn btn-danger btn-sm">삭제</a>
+	          <a href="javascript:guestDelete(${vo.id})" class="btn btn-danger btn-sm">삭제</a>
 	        </c:if>
 	      </td>
 	      <td class="text-end">방문IP : ${vo.hostIp}</td>

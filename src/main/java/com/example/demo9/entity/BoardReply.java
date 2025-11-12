@@ -1,6 +1,5 @@
 package com.example.demo9.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -26,8 +25,9 @@ public class BoardReply {
   @Column(name = "board_reply_id")
   private Long id;
 
-  // 원본글의 pk를 fk로 설정
+  // 원본글의 PK를 FK로 설정
   @ManyToOne(fetch = FetchType.LAZY)
+  @ToString.Exclude
   @JoinColumn(name = "board_id", referencedColumnName = "board_id")
   private  Board board;
 
@@ -35,6 +35,7 @@ public class BoardReply {
   private String name;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @ToString.Exclude
   @JoinColumn(name = "email", referencedColumnName = "email")
   private Member member;
 
