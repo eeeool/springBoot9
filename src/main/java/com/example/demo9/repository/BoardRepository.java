@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, QuerydslPredicateExecutor<Board> {
 
@@ -27,4 +28,14 @@ public interface BoardRepository extends JpaRepository<Board, Long>, QuerydslPre
 
   @Query("select b from Board b where b.id > :id order by b.id asc limit 1")
   Board findNext(Long id);
+
+  @Transactional
+  @Modifying
+  @Query("update Board b set b.good = b.good + 1 where b.id = :id")
+  void setBoardGoodNumPlus(Long id);
+
+  @Transactional
+  @Modifying
+  @Query("update Board b set b.good = b.good + :goodCnt where b.id = :id")
+  void setBoardGoodNumPlusMinus(@Param("id") Long id, @Param("goodCnt") int goodCnt);
 }

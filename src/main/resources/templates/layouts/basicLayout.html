@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<!-- 모든 문서에서의 ajax post전송시 csrf 토큰정보 담아서 전송하기 -->
+<th:block th:if="${userCsrf}">
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</th:block>
+<meta charset="UTF-8">
 <head>
-  <meta charset="UTF-8">
-  <title>basicLayout.html</title>
-  <th:block th:insert="~{include/bs5}"></th:block>
+<title>basicLayout.html</title>
+<th:block th:insert="~{include/bs5}"></th:block>
+
+<script th:inline="javascript">
+  $(document).ready(function() {
+    const token = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
+
+    <!-- ajax처리전에 토큰정보 담기(post전송시) -->
+    $(document).ajaxSend(function(e, xhr, options) {
+      xhr.setRequestHeader(header, token);
+    });
+  });
+</script>
 
   <!-- js파일, css파일을 처리하는 영역 -->
   <th:block layout:fragment="script"></th:block>
   <th:block layout:fragment="css"></th:block>
+
+  <link rel="stylesheet" type="text/css" href="/css/linkOrange.css">
 
 </head>
 <body>

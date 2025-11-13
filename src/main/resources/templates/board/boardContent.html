@@ -5,57 +5,177 @@
 
 <th:block layout:fragment="script">
   <script th:inline="javascript">
+    /*
+    let token = $("meta[name='_csrf']").attr("content");
+    let header = $("meta[name='_csrf_header']").attr("content");
+    */
+
+    /*
+    $(document).ready(function() {
+      token = $("input[name='_csrf']").val();
+      header = $("input[name='_csrf_header']").attr("content");
+      //console.log("CSRF token:", token);
+      //console.log("CSRF header:", header);
+    });
+    */
+
     // 댓글 달기
     function replyCheck() {
-      let ans = confirm('댓글을 작성할까요?');
-      if (!ans) return;
-
-      let boardId = $('form[name="replyForm"] input[name="boardId"]').val();
-      let content = $('#content').val();
-
-      if (!content.trim()) {
-        alert('내용을 입력하세요.');
-        return;
+      let content = $("#content").val();
+      if(content.trim() == "") {
+        alert("댓글을 입력하세요");
+        $("#content").focus();
+        return false;
+      }
+      let query = {
+        boardId : [[${board.id}]],
+        name : [[${session.sName}]],
+        content : content
       }
 
       $.ajax({
-        type: 'POST',
-        url: '/board/boardReplyInput',
-        data: {
-          boardId: boardId,
-          content: content,
-          _csrf: $("input[name='_csrf']").val()
-        },
+        url : 'boardReplyInput',
+        type: 'post',
+        data: query,
+        //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
         success: (res) => {
-          if (res != 0) {
-            alert('댓글이 등록되었습니다.');
-            $('#content').val('');
+          if(res != 0) {
+            alert('댓글이 입력되었습니다.');
             location.reload();
           }
         },
-        error: function(err) {
-          alert('댓글등록 실패');
-        }
+        error : () => alert('전송오류')
       });
     }
 
-    // 게시글 삭제
-    function delCheck(id) {
-      let ans = confirm('삭제할까요?');
-      if (ans) location.href = '/board/boardDelete?id='+id;
+    // 댓글 삭제
+    function replyDeleteCheck(id) {
+    	let ans = confirm("선택한 댓글을 삭제 하시겠습니까?");
+    	if(!ans) return false;
+
+    	$.ajax({
+    		url  : "boardReplyDelete",
+    		type : "get",
+    		data : {
+    			id : id,
+    		},
+    		success:function() {
+          location.reload();
+    		},
+    		error : function() { alert("전송오류!"); }
+    	});
     }
+
+    // 댓글 수정폼 보여주기
+    function replyUpdateCheck(id) {
+    	$(".replyUpdateForm").hide();
+    	$("#replyUpdateForm"+id).show();
+    }
+
+    // 댓글 수정창 닫기
+    function replyUpdateViewClose(id) {
+    	$("#replyUpdateForm"+id).hide();
+    }
+
+    // 댓글 수정하기
+    function replyUpdateCheckOk(id) {
+    	let content = $("#content"+id).val();
+    	if(content.trim() == "") {
+    		alert("수정할 댓글을 입력하세요");
+    		return false;
+    	}
+    	let query = {
+        id : id,
+        content : content
+    	}
+
+    	$.ajax({
+    		url  : "boardReplyUpdateCheckOk",
+    		type : "post",
+    		data : query,
+    		//beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
+    		success:() => {
+          alert("댓글이 수정 되었습니다.");
+          location.reload();
+    		},
+    		error : () => { alert("전송오류!") }
+    	});
+    }
+
+    // 현재글 삭제처리
+    function delCheck() {
+      let ans = confirm("현재 게시글을 삭제 하시겠습니까?");
+      if(ans) {
+        let id = [[${board.id}]];
+        let pag = [[${pageVO.pag}]];
+        location.href = 'boardDelete?id='+id+'&pag='+pag;
+      }
+    }
+
+    // 좋아요 처리(중복 불허)
+    function goodCheck() {
+      let id = [[${board.id}]];
+    	$.ajax({
+    		url  : 'boardGoodCheck',
+    		type : 'post',
+    		data : {id : id},
+    		//beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
+    		success:function(res) {
+    			if(res != 0) alert("이미 좋아요를 클릭하셨습니다.");
+    			else location.reload();
+    		},
+    		error : function() { alert("전송오류!!"); }
+    	});
+    }
+
+    // 좋아요(따봉) 처리(중복 허용)
+    function goodCheckPlus() {
+      let id = [[${board.id}]];
+    	$.ajax({
+    		url  : 'boardGoodCheckPlusMinus',
+    		type : 'post',
+    		//beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
+    		data : {
+    			id : id,
+    			goodCnt : 1
+    		},
+    		success:function() {
+    			location.reload();
+    		},
+    		error : function() { alert("전송오류!!"); }
+    	});
+    }
+
+    // 싫어요 처리(중복 허용)
+    function goodCheckMinus() {
+      let id = [[${board.id}]];
+    	$.ajax({
+    		url  : 'boardGoodCheckPlusMinus',
+    		type : 'post',
+    		//beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
+    		data : {
+    			id : id,
+    			goodCnt : -1
+    		},
+    		success:function() {
+    			location.reload();
+    		},
+    		error : function() { alert("전송오류!!"); }
+    	});
+    }
+
   </script>
 </th:block>
 
+
 <div layout:fragment="content">
+
   <h2 class="text-center mb-4">글 내용 보기</h2>
   <th:block th:if="${board.complaint == 'HI'}">
     <hr class="border border-dark">
     <h3 class="text-center text-danger">해당 게시글은 신고된 글입니다.</h3>
     <hr class="border border-dark">
-    <div class="text-center"><input type="button" value="돌아가기"
-                                    th:onclick="'location.href=\'/board/boardList?pag=' + ${pageVO.pag-1} + '&pageSize=' + ${pageVO.pageSize} + '&search=' + ${pageVO.search} + '&searchString=' + ${pageVO.searchString} + '\''"
-                                    class="btn btn-info"/></div>
+    <div class="text-center"><input type="button" value="돌아가기" onclick="location.href='boardList?pag=${pag}&pageSize=${pageSize}&search=${search}&searchString=${searchString}'" class="btn btn-info"/></div>
   </th:block>
   <th:block th:if="${board.complaint != 'HI'}">
     <table class="table table-bordered text-center border-secondary-subtle">
@@ -74,9 +194,9 @@
       <tr>
         <th class="table-secondary">글제목</th>
         <td colspan="3" class="text-start">[[${board.title}]]
-          (<a th:href="|javascript:goodCheck1()|" title="좋아요">❤</a>([[${board.good}]]))
-          (<a th:href="|javascript:goodCheck2(1)|" title="좋아요">👍</a>
-          <a th:href="|javascript:goodCheck2(-1)|" title="싫어요">👎</a>([[${board.good}]]))
+          (<a th:href="|javascript:goodCheck()|" title="좋아요">❤</a>([[${board.good}]]))
+          (<a th:href="|javascript:goodCheckPlus(1)|" title="좋아요">👍</a>
+          <a th:href="|javascript:goodCheckMinus(-1)|" title="싫어요">👎</a>([[${board.good}]]))
         </td>
       </tr>
       <tr>
@@ -90,14 +210,17 @@
         <th:block th:if="${session.sName != board.name && board.complaint == 'NO'}"><a href="#" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-danger">신고하기</a></th:block>
         <th:block th:if="${board.complaint == 'OK'}"><font color="red"><b>현재 게시글은 신고된 글입니다.</b></font></th:block>
       </div>
-      <th:block th:if="${session.sName == board.name || session.strLevel == '관리자'}">
-        <div class="col text-end">
-          <th:block th:if="${session.sName == board.name}">
-            <input type="button" value="수정" th:onclick="|location.href='boardUpdate(id=${board.id},pag=${pag},pageSize=${pageSize},search=${search},searchString=${searchString}'|" class="btn btn-warning"/>
-          </th:block>
-          <input type="button" value="삭제" onclick="delCheck([[${board.id}]])" class="btn btn-danger"/>
-        </div>
-      </th:block>
+      <!--<th:block th:if="${session.sName == board.name || session.strLevel == '관리자'}">-->
+      <div class="col text-end">
+        <!--<th:block sec:authorize="isAuthenticated()">-->
+        <!--<th:block th:if="${#authentication != null and board != null board.email != null and #authentication.name eq board.email}">-->
+        <th:block th:if="${pageVO.isOwner}">
+          <input type="button" value="수정" th:onclick="|location.href='boardUpdate(id=${board.id},pag=${pag},pageSize=${pageSize},search=${search},searchString=${searchString}'|" class="btn btn-warning"/>
+          <input type="button" value="삭제" onclick="delCheck()" class="btn btn-danger"/>
+        </th:block>
+        <!--</th:block>-->
+      </div>
+      <!--</th:block>-->
     </div>
   </th:block>
 
@@ -126,31 +249,34 @@
     </tr>
     <th:block th:each="replyVO, st : ${replyVos}">
       <tr>
-        <td><span th:text="${replyVO.name}"></span>
-          <th:block th:if="${sMid == replyVO.name || sLevel == 0}">
+        <td>
+          <!--<span th:text="${replyVO.name}"></span>-->
+          [[${replyVO.name}]]
+          <th:block th:if="${session.sName eq replyVO.name || strLevel eq '관리자'}">
             (<a th:href="|javascript:replyDeleteCheck(${replyVO.id})|" title="댓글삭제">x</a>)
-            <th:block th:if="${sMid == replyVO.name}">
+            <th:block th:if="${session.sName eq replyVO.name}">
               (<a th:href="|javascript:replyUpdateCheck(${replyVO.id})|" title="댓글수정">√</a>)
             </th:block>
           </th:block>
         </td>
-        <td class="text-start" th:text="${#strings.replace(replyVO.content, newLine, '<br/>')}"></td>
+        <!--<td class="text-start" th:utext="${#strings.replace(replyVO.content, newLine, '&lt;br/&gt;')}"></td>-->
+        <td class="text-start" th:utext="${replyVO.content}" style="white-space: pre-line;"></td>
         <td th:text="${#strings.substring(replyVO.wDate, 0, 10)}"></td>
         <td th:text="${replyVO.hostIp}"></td>
       </tr>
       <!-- 아래로 댓글 수정 폼 보기 -->
-      <tr style="display:none">
-        <td colspan="4">
-          <div id="replyUpdateForm${replyVO.id}" class="replyUpdateForm">
+      <tr class="border-light">
+        <td colspan="4" class="m-0 p-0">
+          <div th:id="replyUpdateForm+${replyVO.id}" class="replyUpdateForm m-0 p-0" style="display:none;">
             <form name="replyUpdateForm">
               <table class="table text-center">
                 <tr>
                   <td class="text-start" style="width:85%">
                     글내용 :
-                    <textarea rows="4" name="content" id="content${replyVO.id}" class="form-control">${replyVO.content}</textarea>
+                    <textarea rows="4" name="content" th:id="content+${replyVO.id}" class="form-control">[[${replyVO.content}]]</textarea>
                   </td>
                   <td style="width:15%"><br/>
-                    <p>작성자 : ${sNickName}</p>
+                    <p>작성자 : [[${session.sName}]]</p>
                     <p>
                       <a th:href="|javascript:replyUpdateCheckOk(${replyVO.id})|" class="badge bg-primary">댓글수정</a>
                       <a th:href="|javascript:replyUpdateViewClose(${replyVO.id})|" class="badge bg-warning">창닫기</a>
@@ -180,11 +306,12 @@
         </td>
       </tr>
     </table>
+    <!--
     <input type="hidden" name="_csrf" th:value="${_csrf.token}">
     <input type="hidden" name="_csrf_header" th:content="${_csrf.headerName}">
+    -->
   </form>
 
 </div>
-
 
 </html>

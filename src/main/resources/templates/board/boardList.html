@@ -41,8 +41,9 @@
       <tr>
         <td>[[${pageVO.curScrStartNo - st.index}]]</td>
         <td class="text-start">
-          <a th:href="@{boardContent(id=${board.id}, pag=${pageVO.pag}, pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
-          <th:block th:if="${board.hourDiff <= 24}"><img src="/images/new.gif" /></th:block>
+          <a th:href="@{boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
+          <th:block th:if="${board.hourDiff <= 24}"><img src="/images/new.gif"></th:block>
+          <th:block th:if="${board.replyCnt != 0}">([[${board.replyCnt}]])</th:block>
         </td>
         <td>[[${board.name}]]</td>
         <td>

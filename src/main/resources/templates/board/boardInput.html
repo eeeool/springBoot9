@@ -4,12 +4,14 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/basicLayout}">
 
-<!-- CSRF 설정 -->
+  <th:block layout:fragment="script">
+    <script src="/ckeditor/ckeditor.js"></script>
+  </th:block>
+<!-- CSRF 설정
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
 <th:block layout:fragment="script">
-  <script src="/ckeditor/ckeditor.js"></script>
   <script th:inline="javascript">
     var token = $("meta[name='_csrf']").attr("content");
     var header = $("meta[name='_csrf_header']").attr("content");
@@ -19,7 +21,7 @@
       });
     });
   </script>
-</th:block>
+</th:block>-->
 
 <div layout:fragment="content" class="container text-center" style="height:830px">
   <h2>글쓰기</h2>

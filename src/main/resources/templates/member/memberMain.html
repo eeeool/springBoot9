@@ -12,7 +12,9 @@
 
 <div layout:fragment="content">
   <h2>정회원 방</h2>
-  <div>(정회원: [[${sName}]] / 등급: [[${strLevel}]]</div>
+  <div>(정회원: [[${session.sName}]] / 등급: [[${session.strLevel}]]</div>
+  <div>현재 회원 등급 : [[${#authentication.authorities}]]/[[${#authentication.principal.authorities}]]등급</div>
+  <div>현재 로그인 이름(아이디) : [[${#authentication.name}]]/[[${#authentication.principal.username}]]님</div>
   <div>
     <img src="/images/2.jpg" width="400px"/>
   </div>
