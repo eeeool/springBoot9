@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>비밀번호 확인</title>
+  <script th:inline="javascript">
+    'use strict';
+
+    let flag = /*[[${flag}]]*/ 'p';
+    let mid  = /*[[${mid}]]*/ 0;
+
+    function pwdCheck() {
+        let pwd = $("#pwd").val().trim();
+        if(pwd === "") {
+            alert("현재 비밀번호를 입력하세요");
+            $("#pwd").focus();
+            return false;
+        }
+
+        $.ajax({
+            url: '/member/memberPwdCheck',
+            type: 'post',
+            data: {
+                pwd: pwd,
+                mid: mid
+            },
+            success: (res) => {
+                if(res != '0') {
+                    if(flag === 'p') {
+                        $("#myform").hide();
+                        $("#newPassform").show();
+                    } else {
+                        location.href = '/member/memberUpdate?mid=' + mid;
+                    }
+                } else {
+                    alert("비밀번호가 틀립니다. 확인해 주세요");
+                    $("#pwd").focus();
+                }
+            },
+            error: () => alert("전송오류!")
+        });
+    }
+
+    function pwdChange() {
+        let newPwd = $("#newPwd").val().trim();
+        let rePwd = $("#rePwd").val().trim();
+
+        if(newPwd === "" || rePwd === "" || newPwd !== rePwd) {
+            alert("비밀번호가 맞지 않습니다. 비밀번호를 확인하세요");
+        } else {
+            newPassform.action = "/member/memberPwdChange";
+            newPassform.submit();
+        }
+    }
+  </script>
+</head>
+
+<body>
+<p><br/></p>
+<div class="container">
+  <form name="myform" id="myform" method="post">
+    <table class="table table-bordered text-center">
+      <tr>
+        <th colspan="2">
+          <h3>비밀번호 확인</h3>
+          <div>(현재 비밀번호를 확인합니다.)</div>
+        </th>
+      </tr>
+      <tr>
+        <th>비밀번호</th>
+        <td><input type="password" name="pwd" id="pwd" class="form-control" autofocus required /></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input type="button" value="비밀번호확인" onclick="pwdCheck()" class="btn btn-success me-2"/>
+          <input type="reset" value="다시입력" class="btn btn-warning me-2"/>
+          <input type="button" value="돌아가기" onclick="location.href='memberMain'" class="btn btn-info"/>
+        </td>
+      </tr>
+    </table>
+  </form>
+
+  <form name="newPassform" id="newPassform" method="post" style="display:none">
+    <table class="table table-bordered text-center">
+      <tr>
+        <th colspan="2">
+          <h3>비밀번호 변경</h3>
+          <div>(변경할 비밀번호를 입력하세요)</div>
+        </th>
+      </tr>
+      <tr>
+        <th>새비밀번호</th>
+        <td><input type="password" name="newPwd" id="newPwd" class="form-control" required /></td>
+      </tr>
+      <tr>
+        <th>비밀번호확인</th>
+        <td><input type="password" name="rePwd" id="rePwd" class="form-control" required /></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input type="button" value="비밀번호변경" onclick="pwdChange()" class="btn btn-success me-2"/>
+          <input type="reset" value="다시입력" class="btn btn-warning me-2"/>
+          <input type="button" value="돌아가기" onclick="location.href='memberMain'" class="btn btn-info"/>
+        </td>
+      </tr>
+    </table>

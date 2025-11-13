@@ -21,8 +21,15 @@ public class MessageController {
                            @RequestParam(name="pag", defaultValue = "0", required = false) int pag
                            //@RequestParam(name="pageSize", defaultValue = "10", required = false) int pageSize
   ) {
-
-    if(msgFlag.equals("guestInputOk")) {
+    if(msgFlag.equals("memberJoinOk")) {
+      model.addAttribute("message", "회원가입 되었습니다.");
+      model.addAttribute("url", "/member/memberLoginOk");
+    }
+    else if(msgFlag.equals("memberJoinNo")) {
+      model.addAttribute("message", "회원가입에 실패하였습니다.");
+      model.addAttribute("url", "/member/memberLoginNo");
+    }
+    else if(msgFlag.equals("guestInputOk")) {
       model.addAttribute("message", "방명록에 글이 등록되었습니다.");
       model.addAttribute("url", "/guest/guestList");
     }
@@ -45,6 +52,10 @@ public class MessageController {
     else if(msgFlag.equals("boardDeleteNo")) {
       model.addAttribute("message", "현 게시글에 댓글이 존재합니다.\n\n댓글을 먼저 삭제해 주세요.");
       model.addAttribute("url", "/board/boardContent?id="+id+"&pag="+pag);
+    }
+    else if(msgFlag.equals("memberDeleteOk")) {
+      model.addAttribute("message", "회원이 탈퇴되었습니다.");
+      model.addAttribute("url", "/");
     }
     return "include/message";
   }

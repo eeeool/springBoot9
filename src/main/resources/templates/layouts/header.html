@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
-<!-- header 영역에는 nav, image 처리 -->
+<!-- header영역에는 nav, image 처리-->
 <div th:fragment="header">
-    <th:block th:insert="~{include/nav}"></th:block>
-    <div><img src="/images/2.jpg" style="width: 100%; height: 220px;"></div>
+  <th:block th:insert="~{include/nav}"></th:block>
+  <div><img src="/images/2.jpg" style="width:100%; height:220px"/></div>
 </div>
+
+
 </html>

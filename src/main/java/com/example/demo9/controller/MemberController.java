@@ -10,16 +10,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -114,15 +119,61 @@ public class MemberController {
       Member memberRes = memberService.saveMember(member);
       System.out.println("==> " + memberRes);
       rttr.addFlashAttribute("message", "회원에 가입되었습니다.");
-      return "redirect:/member/memberLogin";
+      return "redirect:/member/memberLoginOk";
     } catch (IllegalStateException e) {
       rttr.addFlashAttribute("message", e.getMessage());
-      return "redirect:/member/memberJoin";
+      return "redirect:/member/memberJoinNo";
     }
   }
 
+  // 회원 정보 폼
   @GetMapping("memberMain")
   public String memberMainGet() {
     return "member/memberMain";
+  }
+
+  // 회원 리스트 폼
+  @GetMapping("/memberList")
+  public String memberListGet(Model model) {
+    List<Member> memberList = memberService.getMemberSearch();
+    model.addAttribute("memberList", memberList);
+
+    return "member/memberList";
+  }
+
+  // 비밀번호 확인(회원정보 수정/비밀번호 변경)
+  @GetMapping("/memberPwdCheck/{flag}")
+  public String memberPwdUpdateGet(@PathVariable String flag, Model model, Principal principal) {
+    String email = principal.getName();
+    Optional<Member> member = Optional.ofNullable(memberService.getMemberEmailCheck(email)
+            .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 회원입니다.")));
+
+    model.addAttribute("mid", member.get().getId());
+    model.addAttribute("flag", flag);
+
+    if("p".equals(flag)) {
+      return "member/memberPwdCheck";
+    } else if("u".equals(flag)) {
+      MemberDto dto = MemberDto.entityToDto(member);
+      model.addAttribute("memberDto", dto);
+      return "member/memberUpdate";
+    } else {
+      throw new IllegalArgumentException("잘못된 접근입니다.");
+    }
+  }
+
+
+  // 회원탈퇴
+  @GetMapping("/memberDelete")
+  public String memberDeleteGet(Principal principal, HttpServletRequest request, HttpServletResponse response) {
+    String name = principal.getName();
+    memberService.getMemberDelete(name);
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth != null) {
+      new SecurityContextLogoutHandler().logout(request, response, auth);
+    }
+
+    return "redirect:/message/memberDeleteOk";
   }
 }

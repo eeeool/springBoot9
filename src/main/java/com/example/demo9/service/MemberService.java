@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,5 +46,15 @@ public class MemberService implements UserDetailsService {
             .password(opMember.get().getPassword())
             .roles(opMember.get().getRole().toString())
             .build();
+  }
+
+  public List<Member> getMemberSearch() {
+    return memberRepository.findAll();
+  }
+
+  public void getMemberDelete(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 회원입니다."));
+    memberRepository.delete(member);
   }
 }
