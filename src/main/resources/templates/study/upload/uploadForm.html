@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+                xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+                layout:decorate="~{layouts/basicLayout}">
+
+<script th:inline="javascript" layout:fragment="script">
+  // 싱글파일 업로드 체크
+  function fCheck() {
+    let fName = document.getElementById("sFile").value();
+    let maxSize = 1024 * 1024 * 10; // 최대용량 10MByte까지 제한
+    let ext = fName.substring(fName.lastIndexOf('.')+1).toLowerCase();
+
+    if (fName.trim() == '') {
+      alert('업로드 할 파일을 선택하세요.');
+      return false;
+    }
+
+    let fileSize = document.getElementById('sFile').files[0].size;
+    if (fileSize > maxSize) {
+      alert('업로드 할 파일의 최대용량은 10MByte 입니다.');
+    }
+    else if (ext != 'jpg' && ext != 'gif' && ext != 'png' && ext != 'hwp' && ext != 'zip' && ext != 'ppt' && ext != 'pptx') {
+      alert('업로드 가능한 파일은 'jpg/gif/png/hwp/zip/ppt/pptx/'만 가능합니다.');
+    }
+    else {
+      uploadForm.submit();
+    }
+  }
+
+  // 멀티파일 업로드 체크
+  function mfCheck() {
+    let fName = document.getElementById('mFile').value;
+    let fileSize = 0;
+    let maxSize = 1024 * 1024 * 30; // 최대용량 30MByte까지 제한
+    let ext = '';
+
+    if (fName.trim() == '') {
+      alert('업로드 할 파일을 선택하세요.');
+      return false;
+    }
+
+    let fileLength = document.getElementById('mFile').files.length;
+
+    for (let i=0; i<fileLength; i++) {
+      fName = document.getElementById('mFile').files[i].name;
+      ext = fName.substring(fName.lastIndexOf('.')+1).toLowerCase();
+      fileSize += document.getElementById('mFile').files[i].size;
+
+      if(ext != 'jpg' && ext != 'gif' && ext != 'png' && ext != 'hwp' && ext != 'zip' && ext != 'ppt' && ext != 'pptx') {
+        alert("업로드 가능한 파일은 'jpg/gif/png/hwp/zip/ppt/pptx/'만 가능합니다.")
+        return false;
+      }
+    }
+
+    if (fileSize > maxSize) {
+      alert('업로드 할 전체 파일의 최대용량은 30MByte 입니다.');
+      return false;
+    }
+    multiUploadForm.submit();
+  }
+</script>
+
+<div layout:fragment="content">
+  <h2 class="text-center mb-4">파일 업로드 연습</h2>
+  <hr/>
+  <div class="row">
+    <div class="col text-start"><input type="button" value="돌아가기" onclick="location.href='/member/memberMain'" class="btn btn-secondary"/></div>
+    <div class="col text-end"><input type="button" value="서버파일리스트보기" onclick="location.href='/study/upload/uploadList'" class="btn btn-info"/></div>
+  </div>
+  <hr/><br/>
+  <form name="uploadForm" method="post" enctype="multipart/form-data">
+    <h4>싱글파일 업로드</h4>
+    <table class="table table-bordered">
+      <tr>
+        <td><input type="file" name="sFile" id="sFile" class="form-control"/></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class="text-center">
+            <input type="button" value="싱글파일업로드" onclick="fCheck()" class="btn btn-success"/>
+            <input type="reset" value="다시입력" class="btn btn-warning"/>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+  </form>
+  <br/><hr/><br/>
+
+  <form name="multiUploadForm" method="post" action="/study/upload/multiUpload" enctype="multipart/form-data">
+    <h4>멀티파일 업로드</h4>
+    <table class="table table-bordered">
+      <tr>
+        <td><input type="file" name="mFile" id="mFile" multiple class="form-control"/></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class="text-center">
+            <input type="button" value="멀티파일업로드" onclick="mfCheck()" class="btn btn-primary"/>
+            <input type="reset" value="다시입력" class="btn btn-warning"/>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+  </form>
+</div>
+
+</html>

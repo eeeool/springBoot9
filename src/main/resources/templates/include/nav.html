@@ -31,6 +31,12 @@
           <a class="nav-link active" aria-current="page" th:href="@{/pds/pdsList}">Pds</a>
         </li>
         <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Study</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" th:href="@{/study/upload/uploadForm}">파일업로드</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">MyShop</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" th:href="@{#}">상품리스트</a></li>
@@ -46,14 +52,15 @@
         <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">MyPage</a>
           <ul class="dropdown-menu">
+            <li><a class="dropdown-item" th:href="@{/member/memberMain}">[[${session.sName}]]</a></li>
             <li><a class="dropdown-item" th:href="@{/member/memberList}">회원리스트</a></li>
-            <li><a class="dropdown-item" th:href="@{#}">메세지 보내기</a></li>
-            <li><a class="dropdown-item" th:href="@{/member/memberPwdCheck/p}">비밀번호 변경</a></li>
+            <li><a class="dropdown-item" th:href="@{#}">메세지보내기</a></li>
+            <li><a class="dropdown-item" th:href="@{/member/memberPwdCheck/p}">비밀번호변경</a></li>
             <li><a class="dropdown-item" th:href="@{/member/memberPwdCheck/u}">정보수정</a></li>
-            <li><a class="dropdown-item" th:href="|javascript:memberDeleteCheck()|">회원탈퇴</a></li>
+            <li><a class="dropdown-item" th:href="|javascript:userDeleteCheck()|">회원탈퇴</a></li>
             <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" th:href="@{/admin/productInput}">관리자 메뉴</a></li>
+              <li><a class="dropdown-item" th:href="@{/admin/productInput}">관리자메뉴</a></li>
             </th:block>
           </ul>
         </li>
